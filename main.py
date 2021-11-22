@@ -74,7 +74,7 @@ def tableMaker():
          'Родительский': [], 'Сгруппированные товары': [], 'Апсейл': [], 'Кросселы': [],
          'Внешний URL': [], 'Текст кнопки': [], 'Позиция': [], 'Имя атрибута 1': [],
          'Значение(-я) атрибута(-ов) 1': [],
-         'Видимость атрибута 1': [], 'Глобальный атрибут 1': []}
+         'Видимость атрибута 1': [], 'Глобальный атрибут 1': []}, dtype='string'
     )
 
 
@@ -95,7 +95,7 @@ def makePictureLink(name):
 
 
 def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_price: str, group: str, subgroup: str,
-                sub_sub_group: str, sub_sub_sub_group: str, shop: str, global_product_counter: int):
+                sub_sub_group: str, sub_sub_sub_group: str, shop: str, global_product_counter: int, short_expl:str):
     # attributeName = 'Магазин'
     # finalTable = finalTable.copy()
 
@@ -103,13 +103,14 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
     if similarity != -1:
         for k in range(2,5):
             if finalTable.isna()['Имя'][similarity+ k]:
-                finalTable['ID'][similarity + k] = similarity + k
+                finalTable['ID'][similarity + k] = str(similarity + k)
                 finalTable['Тип'][similarity + k] = 'variation'
                 # finalTable['Артикул'][similarity+1+i] = SKU
                 finalTable['Имя'][similarity + k] = name + ' - ' + shop
                 finalTable['Опубликован'][similarity + k] = '1'
                 finalTable['рекомендуемый?'][similarity + k] = '0'
                 finalTable['Видимость в каталоге'][similarity + k] = 'visible'
+                # finalTable['Краткое описание'][similarity + k] = short_expl
                 finalTable['Статус налога'][similarity + k] = 'taxable'
                 finalTable['Налоговый класс'][similarity + k] = 'parent'
                 finalTable['В наличии?'][similarity + k] = '1'
@@ -136,13 +137,13 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
         lastIndex = len(finalTable['ID'])
 
         # filling 5 rows by NaN
-        dtypes = [
-            'int', 'str', 'int', 'str', 'int', 'int', 'str', 'str', 'str', 'str', 'str', 'str',# last - Статус налога
-            'str', 'int', 'int', 'float', 'int', 'str', 'float', 'float', 'str', 'str', 'str', # last - Класс доставки
-            'str', 'int', 'str', 'str', 'str', 'str', 'str', 'int', 'str', 'str', 'int', 'int'
-            ]
+        # dtypes = [
+        #     'int', 'str', 'int', 'str', 'int', 'int', 'str', 'str', 'str', 'str', 'str', 'str',# last - Статус налога
+        #     'str', 'int', 'int', 'float', 'int', 'str', 'float', 'float', 'str', 'str', 'str', # last - Класс доставки
+        #     'str', 'int', 'str', 'str', 'str', 'str', 'str', 'int', 'str', 'str', 'int', 'int'
+        #     ]
         for i in range(5):
-            finalTable = finalTable.append(pd.Series(dtype='object'), ignore_index=True)
+            finalTable = finalTable.append(pd.Series(dtype='string'), ignore_index=True)
         global_product_counter += 1
 
         SKU = lastIndex + 10000
@@ -156,14 +157,15 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
         picture = makePictureLink(name)
 
         # parent product
-        finalTable['ID'][lastIndex] = lastIndex + 1
+        finalTable['ID'][lastIndex] = str(lastIndex + 1)
         finalTable['Тип'][lastIndex] = 'variable'
-        finalTable['Артикул'][lastIndex] = SKU
-        finalTable['Имя'][lastIndex] = name
+        finalTable['Артикул'][lastIndex] = str(SKU)
+        finalTable['Имя'][lastIndex] = str(name)
         finalTable['Опубликован'][lastIndex] = '1'
         finalTable['рекомендуемый?'][lastIndex] = '0'
         finalTable['Видимость в каталоге'][lastIndex] = 'visible'
         finalTable['Статус налога'][lastIndex] = 'taxable'
+        finalTable['Краткое описание'][lastIndex] = 'Цена указана за ' + short_expl
         finalTable['В наличии?'][lastIndex] = '1'
         # finalTable['Возможен ли предзаказ?'][lastIndex] = 0
         finalTable['Продано индивидуально?'][lastIndex] = '0'
@@ -178,7 +180,7 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
         finalTable['Глобальный атрибут 1'][lastIndex] = '1'
 
         # first child product
-        finalTable['ID'][lastIndex + 1] = lastIndex + 2
+        finalTable['ID'][lastIndex + 1] = str(lastIndex + 2)
         finalTable['Тип'][lastIndex + 1] = 'variation'
         # finalTable['Артикул'][lastIndex+1] = SKU
         finalTable['Имя'][lastIndex + 1] = name + ' - ' + shop
@@ -186,6 +188,7 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
         finalTable['рекомендуемый?'][lastIndex + 1] = '0'
         finalTable['Видимость в каталоге'][lastIndex + 1] = 'visible'
         finalTable['Статус налога'][lastIndex + 1] = 'taxable'
+        # finalTable['Краткое описание'][lastIndex] = short_expl
         finalTable['Налоговый класс'][lastIndex + 1] = 'parent'
         finalTable['В наличии?'][lastIndex + 1] = '1'
         # finalTable['Возможен ли предзаказ?'][lastIndex + 1] = 0
@@ -193,8 +196,8 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
         finalTable['Разрешить отзывы от клиентов?'][lastIndex + 1] = '0'
         finalTable['Класс доставки'][lastIndex + 1] = shop
         if sale_price != '-1':
-            finalTable['Цена распродажи'][lastIndex + 1] = sale_price
-        finalTable['Базовая цена'][lastIndex + 1] = price
+            finalTable['Цена распродажи'][lastIndex + 1] = str(sale_price)
+        finalTable['Базовая цена'][lastIndex + 1] = str(price)
         # finalTable['Категории'][lastIndex+1] = categories
         # finalTable['Изображения'][lastIndex+1] = picture + ', ' + picture
         finalTable['Класс доставки'][lastIndex + 1] = shop
@@ -212,7 +215,7 @@ if __name__ == '__main__':
     pd.options.mode.chained_assignment = None
     start_time = time.time()
     print('---------')
-    print(datetime.now())
+    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     # myTable=pd.DataFrame()
     myTable = tableMaker()
     # print(f'fisrt {type(myTable)}')
@@ -241,8 +244,8 @@ if __name__ == '__main__':
         subx2_group = ''
         subx3_group = ''
 
-        for row in range(11, tableSize):
-            if sheet[row][1].value==' ':
+        for row in range(3000, tableSize):
+            if sheet[row][1].value==' ' or sheet[row][1].value=='':
                 continue
 
             # check group
@@ -280,7 +283,7 @@ if __name__ == '__main__':
                 myTable, how_many_global_products = tableFiller(myTable.copy(), _id, sheet[row][1].value,
                                                                 sheet[row][2].value, '-1', group, sub_group,
                                                                 subx2_group, subx3_group, shop,
-                                                                how_many_global_products)
+                                                                how_many_global_products, sheet[row][3].value)
                 _id += 1
 
         del xlsBook
@@ -294,7 +297,7 @@ if __name__ == '__main__':
     time_for_naming = datetime.now()
     fileName = args.output + '/prices_woo_' + time_for_naming.strftime('%Y-%m-%d_%H-%M-%S') + '.csv'
     myTable.to_csv(fileName, index=False)
-    print(datetime.now())
+    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     print('---------')
     print('execution_time')
     print(time.time() - start_time)
