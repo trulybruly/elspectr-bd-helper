@@ -6,7 +6,8 @@ import numpy as np
 from transliterate import slugify
 from datetime import datetime
 import time
-import multiprocessing as mp
+from num_fin import num_fin
+# import multiprocessing as mp
 
 parser = argparse.ArgumentParser(usage="elspectr", description="4 xls files into csv for e-shop.")
 parser.add_argument("tables", help="excell files", nargs="+")
@@ -95,14 +96,14 @@ def makePictureLink(name):
 
 
 def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_price: str, group: str, subgroup: str,
-                sub_sub_group: str, sub_sub_sub_group: str, shop: str, global_product_counter: int, short_expl:str):
+                sub_sub_group: str, sub_sub_sub_group: str, shop: str, global_product_counter: int, short_expl: str):
     # attributeName = 'Магазин'
     # finalTable = finalTable.copy()
 
     similarity = isThereSmthSimilar(name, finalTable, global_product_counter)
     if similarity != -1:
-        for k in range(2,5):
-            if finalTable.isna()['Имя'][similarity+ k]:
+        for k in range(2, 5):
+            if finalTable.isna()['Имя'][similarity + k]:
                 finalTable['ID'][similarity + k] = str(similarity + k)
                 finalTable['Тип'][similarity + k] = 'variation'
                 # finalTable['Артикул'][similarity+1+i] = SKU
@@ -119,13 +120,13 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
                 finalTable['Разрешить отзывы от клиентов?'][similarity + k] = '0'
                 finalTable['Класс доставки'][similarity + k] = shop
                 if sale_price != '-1':
-                    finalTable['Цена распродажи'][similarity + k] = sale_price
-                finalTable['Базовая цена'][similarity + k] = price
+                    finalTable['Цена распродажи'][similarity + k] = str(ale_price)
+                finalTable['Базовая цена'][similarity + k] = str(price)
                 # finalTable['Категории'][similarity+1+i] = categories
                 # finalTable['Изображения'][similarity+1+i] = picture + ', ' + picture
                 finalTable['Класс доставки'][similarity + k] = shop
                 finalTable['Родительский'][similarity + k] = finalTable['Артикул'][similarity]
-                finalTable['Позиция'][similarity + k] = k
+                finalTable['Позиция'][similarity + k] = str(k)
                 finalTable['Имя атрибута 1'][similarity + k] = 'Магазин'
                 finalTable['Значение(-я) атрибута(-ов) 1'][similarity + k] = shop
                 # finalTable['Видимость атрибута 1'][similarity+1+i] = 1
@@ -211,6 +212,17 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
         return finalTable, global_product_counter
 
 
+def comma_and_number_del(name: str):
+    name.replace(',', '')
+    name = num_fin(name)
+    return name
+
+
+def print_quotes(name: str):
+    name = '"' + name + '"'
+    return name
+
+
 if __name__ == '__main__':
     pd.options.mode.chained_assignment = None
     start_time = time.time()
@@ -226,7 +238,7 @@ if __name__ == '__main__':
     atribut = ('ул. Плотникова 4', 'ул. Свободы 67', 'ул. Страж Революции 4', 'ул. Телеграфная 53')
 
     for i in range(len(args.tables)):
-        print('---\nProcessing: '+atribut[i])
+        print('---\nProcessing: ' + atribut[i])
         table_time = time.time()
 
         shop = atribut[i]
@@ -244,26 +256,30 @@ if __name__ == '__main__':
         subx2_group = ''
         subx3_group = ''
 
-        for row in range(3000, tableSize):
-            if sheet[row][1].value==' ' or sheet[row][1].value=='':
+        for row in range(11, tableSize):
+            if sheet[row][1].value == ' ' or sheet[row][1].value == '':
                 continue
 
             # check group
             color = groupChecker(xlsBook, row)
             if color == 0:
                 group = sheet[row][1].value
+                group = comma_and_number_del(group)
                 sub_group = ''
                 subx2_group = ''
                 subx3_group = ''
             if color == 1:
                 sub_group = sheet[row][1].value
+                sub_group = comma_and_number_del(sub_group)
                 subx2_group = ''
                 subx3_group = ''
             if color == 2:
                 subx2_group = sheet[row][1].value
+                subx2_group = comma_and_number_del(subx2_group)
                 subx3_group = ''
             if color == 3:
                 subx3_group = sheet[row][1].value
+                subx3_group = comma_and_number_del(subx3_group)
             if color == 4:
                 # myTable = pd.DataFrame(
                 #     {'ID': [], 'Тип': [], 'Артикул': [], 'Имя': [], 'Опубликован': [], 'рекомендуемый?': [],
@@ -280,7 +296,7 @@ if __name__ == '__main__':
                 # )
                 # print(f'second {type(myTable)}')
                 # print(row)
-                myTable, how_many_global_products = tableFiller(myTable.copy(), _id, sheet[row][1].value,
+                myTable, how_many_global_products = tableFiller(myTable.copy(), _id, sheet[row][1].value.replace('  ',' '),
                                                                 sheet[row][2].value, '-1', group, sub_group,
                                                                 subx2_group, subx3_group, shop,
                                                                 how_many_global_products, sheet[row][3].value)
@@ -289,7 +305,7 @@ if __name__ == '__main__':
         del xlsBook
         del sheet
 
-        print('processing time: '+str(time.time()-table_time)+', s')
+        print('processing time: ' + str(time.time() - table_time) + ', s')
 
     # deleting empty rows
     myTable = myTable.dropna(how='all')
