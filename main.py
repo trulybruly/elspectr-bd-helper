@@ -120,7 +120,7 @@ def tableFiller(finalTable: pd.DataFrame, id_: int, name: str, price: str, sale_
                 finalTable['Разрешить отзывы от клиентов?'][similarity + k] = '0'
                 finalTable['Класс доставки'][similarity + k] = shop
                 if sale_price != '-1':
-                    finalTable['Цена распродажи'][similarity + k] = str(ale_price)
+                    finalTable['Цена распродажи'][similarity + k] = str(sale_price)
                 finalTable['Базовая цена'][similarity + k] = str(price)
                 # finalTable['Категории'][similarity+1+i] = categories
                 # finalTable['Изображения'][similarity+1+i] = picture + ', ' + picture
